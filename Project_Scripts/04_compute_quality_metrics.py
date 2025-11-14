@@ -21,6 +21,8 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()]
 )
 
+# python Project_Scripts\04_compute_quality_metrics.py C:\Users\zabit\Documents\GitHub\common-crawl-news-lt\data C:\Users\zabit\Documents\GitHub\common-crawl-news-lt\data\metrics --max_processes 2
+
 # Pre-compile regular expressions
 sentence_pattern = re.compile(r'\b[^.!?]+[.!?]*')
 

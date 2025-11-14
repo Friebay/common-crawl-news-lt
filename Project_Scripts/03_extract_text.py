@@ -22,6 +22,8 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()]
 )
 
+# python Project_Scripts\03_extract_text.py data\unprocessed data\tlds.xlsx
+
 def extract_top_level_domain(url):
     """Extract the top-level domain (TLD) from a URL."""
     try:
@@ -94,7 +96,7 @@ def main(folder, tlds_file):
         return
 
     logging.info(f"Processing {len(files)} files from folder: {folder}")
-    with multiprocessing.Pool(processes=os.cpu_count()) as pool:
+    with multiprocessing.Pool(processes=2) as pool:
         with tqdm(total=len(files), desc="Overall Progress") as pbar:
             for _ in pool.imap_unordered(functools.partial(parse_file, exclude_tlds=exclude_tlds), files):
                 pbar.update()

@@ -21,6 +21,8 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()]
 )
 
+# python Project_Scripts\05_filter_news.py C:\Users\zabit\Documents\GitHub\common-crawl-news-lt\data\metrics C:\Users\zabit\Documents\GitHub\common-crawl-news-lt\data\filtered
+
 def process_and_save_file(file_path, save_dir):
     """Filter and save a single file based on quality metrics."""
     try:
@@ -34,7 +36,7 @@ def process_and_save_file(file_path, save_dir):
         df = df[
             (df['javascript_count'] == 0) &
             (df["sentences_count"] >= 3) &
-            (df["fraction_non_alpha_words"] < 0.1) &
+            # (df["fraction_non_alpha_words"] < 0.1) &
             (df['words_per_line'] > 5) &
             (df["mean_word_length"].between(3, 12)) &
             (df["word_count"].between(50, 10000))

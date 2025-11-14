@@ -21,6 +21,8 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()]
 )
 
+# python Project_Scripts\06_named_entity_recognition.py C:\Users\zabit\Documents\GitHub\common-crawl-news-lt\data\filtered C:\Users\zabit\Documents\GitHub\common-crawl-news-lt\data\ner_output lt_core_news_lg
+
 # Pre-compiled regex for date extraction
 date_pattern = re.compile(r"\d{8}")
 
