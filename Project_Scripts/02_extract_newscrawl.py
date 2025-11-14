@@ -15,6 +15,8 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()]
 )
 
+# python Project_Scripts\02_extract_newscrawl.py data\unprocessed
+
 def extract_records(warc_file_path):
     """Extract records from a WARC file."""
     records = []
@@ -84,7 +86,7 @@ if __name__ == '__main__':
 
     # Use a multiprocessing Pool to process files concurrently
     logging.info(f"Found {len(files)} WARC files. Starting extraction...")
-    with Pool(processes=os.cpu_count()) as pool:  # Use the number of CPU cores available
+    with Pool(processes=2) as pool:  # Use the number of CPU cores available
         list(tqdm(pool.imap(process_warc_file, files), total=len(files), desc="Processing WARC files"))
 
     logging.info("All WARC files processed successfully.")

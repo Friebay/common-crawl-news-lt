@@ -13,6 +13,7 @@ import trafilatura
 import json
 from urllib.parse import urlparse
 from argparse import ArgumentParser
+import functools
 
 # Configure logging
 logging.basicConfig(
@@ -39,7 +40,8 @@ def parse_file(filename, exclude_tlds):
     try:
         data = pd.read_feather(filename)
         data["TLD"] = data["URL"].apply(extract_top_level_domain)
-        data = data[~data["TLD"].isin(exclude_tlds["Country Code"])]
+        data = data.dropna(subset=["TLD"])
+        data = data[data["TLD"].str.lower() == ".lt"]
         data = data.reset_index(drop=True)
 
         for _, row in tqdm(data.iterrows(), total=len(data), desc=f"Processing {os.path.basename(filename)}", leave=False):
@@ -50,7 +52,7 @@ def parse_file(filename, exclude_tlds):
                     deduplicate=True,
                     output_format="json",
                     with_metadata=True,
-                    target_language="de"
+                    target_language="lt"
                 )
                 if extracted:
                     root = json.loads(extracted)
@@ -94,7 +96,7 @@ def main(folder, tlds_file):
     logging.info(f"Processing {len(files)} files from folder: {folder}")
     with multiprocessing.Pool(processes=os.cpu_count()) as pool:
         with tqdm(total=len(files), desc="Overall Progress") as pbar:
-            for _ in pool.imap_unordered(lambda f: parse_file(f, exclude_tlds), files):
+            for _ in pool.imap_unordered(functools.partial(parse_file, exclude_tlds=exclude_tlds), files):
                 pbar.update()
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Script for performing Named Entity Recognition (NER) on German news articles.
+Script for performing Named Entity Recognition (NER) on Lithuanian news articles.
 
 Updated for improved clarity, robustness, and configurability.
 """
@@ -24,9 +24,33 @@ logging.basicConfig(
 # Pre-compiled regex for date extraction
 date_pattern = re.compile(r"\d{8}")
 
-def get_entities(filepath, nlp, out_folder):
-    """Extract named entities from a file and save results."""
+## Globals used by worker processes (set by initializer)
+WORKER_NLP = None
+WORKER_OUT = None
+
+def init_worker(model_path, out_folder):
+    """Initializer for worker processes: load the spaCy model once per worker and set globals."""
+    global WORKER_NLP, WORKER_OUT
+    WORKER_NLP = spacy.load(model_path)
+    WORKER_OUT = out_folder
+
+
+def get_entities(filepath):
+    """Extract named entities from a file and save results.
+
+    This function runs in worker processes and relies on WORKER_NLP and WORKER_OUT
+    being set by the Pool initializer.
+    """
     try:
+        nlp = WORKER_NLP
+        out_folder = WORKER_OUT
+
+        if nlp is None:
+            raise RuntimeError("Worker NLP model is not initialized. Did you start Pool with initializer?")
+
+        if out_folder is None:
+            raise RuntimeError("Worker output folder is not initialized. Did you start Pool with initializer?")
+
         # Load data and drop rows without text
         data = pd.read_feather(filepath).dropna(subset=["text"])
 
@@ -45,7 +69,7 @@ def get_entities(filepath, nlp, out_folder):
         # Process each text and extract entities
         for text in tqdm(data["text"], desc=f"Processing {os.path.basename(filepath)}", leave=False):
             doc = nlp(text)
-            ents_loc.append([ent.text for ent in doc.ents if ent.label_ == 'city_names'])
+            ents_loc.append([ent.text for ent in doc.ents if ent.label_ in ['LOC', 'GPE']])
 
         # Add extracted entities to the DataFrame
         data["loc"] = ents_loc
@@ -73,15 +97,14 @@ def main(input_folder, output_folder, model_path):
         logging.info("No new files to process. Exiting.")
         return
 
+    # Ensure output folder exists before workers start
     os.makedirs(output_folder, exist_ok=True)
-    nlp = spacy.load(model_path)
 
     logging.info(f"Starting NER processing on {len(files_to_process)} files.")
-    process_func = lambda filepath: get_entities(filepath, nlp, output_folder)
 
-    # Use multiprocessing for efficient processing
-    with Pool(processes=min(len(files_to_process), cpu_count())) as pool:
-        for _ in tqdm(pool.imap_unordered(process_func, files_to_process), total=len(files_to_process), desc="Processing files"):
+    # Use multiprocessing with an initializer so each worker loads the spaCy model once.
+    with Pool(processes=min(len(files_to_process), cpu_count()), initializer=init_worker, initargs=(model_path, output_folder)) as pool:
+        for _ in tqdm(pool.imap_unordered(get_entities, files_to_process), total=len(files_to_process), desc="Processing files"):
             pass
 
 if __name__ == "__main__":

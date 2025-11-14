@@ -1,0 +1,16 @@
+# requirements for common-crawl-news-lt
+requests>=2.31.0
+warcio>=1.7.4
+tqdm>=4.66.0
+usearch>=2.9.0
+pandas>=2.0.0
+numpy>=1.24.0,<2.0.0
+sentence-transformers>=2.2.0
+torch>=2.1.0
+trafilatura[all]>=1.6.0
+geopy>=2.4.0
+spacy>=3.7.0
+pyarrow>=14.0.0
+torchvision>=0.16.0
+accelerate>=0.25.0
+openpyxl>=3.1.0

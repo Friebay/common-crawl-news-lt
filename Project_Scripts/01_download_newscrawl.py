@@ -22,12 +22,26 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()]
 )
 
+# python Project_Scripts\01_download_newscrawl.py 2023/09 --max-files 1 --download-folder data\unprocessed
+
 # Argument parser
 parser = argparse.ArgumentParser(description='Process YEAR_MONTH for Common Crawl.')
 parser.add_argument(
     'year_month',
     type=str,
     help='The Year and Month in YYYY/MM format (e.g., 2023/09).'
+)
+parser.add_argument(
+    '--max-files',
+    type=int,
+    default=None,
+    help='Maximum number of WARC files to download (for testing). If not specified, downloads all.'
+)
+parser.add_argument(
+    '--download-folder',
+    type=str,
+    default=None,
+    help='Override the default download folder (for testing).'
 )
 args = parser.parse_args()
 YEAR_MONTH = args.year_month
@@ -40,7 +54,7 @@ if not YEAR_MONTH or len(YEAR_MONTH) != 7 or YEAR_MONTH[4] != '/':
 BASE_URL = "https://data.commoncrawl.org/crawl-data/CC-NEWS/"
 folder = YEAR_MONTH.replace("/", "-")
 WARC_PATHS_FILE = f"{YEAR_MONTH}/warc.paths.gz"
-DOWNLOAD_FOLDER = os.path.join(r"D:\CommonCrawl\news", folder)
+DOWNLOAD_FOLDER = args.download_folder if args.download_folder else os.path.join(r"D:\CommonCrawl\news", folder)
 DOWNLOAD_URL = "https://data.commoncrawl.org/"
 
 # Ensure folder exists
@@ -78,6 +92,10 @@ if not os.path.exists(warc_paths_local):
 logging.info(f"Extracting WARC file paths from: {warc_paths_local}")
 with gzip.open(warc_paths_local, 'rt') as f:
     file_paths = [line.strip() for line in f]
+
+if args.max_files:
+    file_paths = file_paths[:args.max_files]
+    logging.info(f"Limited to first {args.max_files} WARC files for testing.")
 
 # Function to download a single WARC file
 def download_warc_file(path):

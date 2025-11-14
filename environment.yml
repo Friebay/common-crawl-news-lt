@@ -1,0 +1,30 @@
+# Conda environment for common-crawl-news-lt (Windows 10, CPU-only)
+# Use: conda env create -f environment.yml
+
+name: common-crawl-news-lt
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.10
+  - pip
+  - pandas
+  - numpy
+  - pyarrow
+  - requests
+  - trafilatura
+  - warcio
+  - geopy
+  - tqdm
+  - openpyxl
+  - spacy
+  - pytorch=2.1.0
+  - torchvision=0.16.0
+  - cpuonly
+
+  - pip:
+    - sentence-transformers>=2.2.0
+    - accelerate>=0.25.0
+    - usearch>=2.9.0
